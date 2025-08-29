@@ -211,8 +211,19 @@ def execute_sync(org, team, slug, state):
         raise AssertionError(message)
     else:
         for user in state["action"]["add"]:
-            # Validate that user is in org
-            if org.is_member(user) or ADD_MEMBER:
+            # Add user to org if they are not already a member and the ADD_MEMBER attribute is "true"
+            if not org.is_member(user) and ADD_MEMBER:
+                try:
+                    print(f"User: {user} is not in the {org.login} organization. Attempting to add.")
+                    org.add_or_update_membership(user)
+                except Exception as e:
+                    print(f"Error adding {user} to {org.login}: {e}")
+                    pass
+            else:
+                print(f"User: {user} is already a member of the {org.login} organization or ADD_MEMBER is false")
+
+            # Add user to team if they are a member of the org
+            if org.is_member(user):
                 try:
                     print(f"Adding {user} to {slug}")
                     team.add_or_update_membership(user)
